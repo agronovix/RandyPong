@@ -1,0 +1,107 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #1a2a3a 0%, #0d1117 70%);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: #e6edf3;
+}
+
+#game-container {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+header h1 {
+  font-size: 2.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #ff6b35, #f7c948);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.25rem;
+}
+
+.tagline {
+  color: #8b949e;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.tagline em {
+  color: #f7c948;
+  font-style: normal;
+  font-weight: 600;
+}
+
+#game {
+  display: block;
+  margin: 0 auto;
+  border: 3px solid #30363d;
+  border-radius: 8px;
+  box-shadow:
+    0 0 40px rgba(255, 107, 53, 0.15),
+    inset 0 0 60px rgba(0, 0, 0, 0.4);
+  background: #0a1628;
+  cursor: crosshair;
+}
+
+#hud {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  max-width: 900px;
+}
+
+.score {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.score .label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #8b949e;
+}
+
+.score span:last-child {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+#status {
+  font-size: 0.95rem;
+  color: #58a6ff;
+  min-height: 1.4em;
+}
+
+#controls {
+  margin-top: 1.25rem;
+  color: #6e7681;
+  font-size: 0.85rem;
+  line-height: 1.8;
+}
+
+kbd {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  background: #161b22;
+  font-family: inherit;
+  font-size: 0.8rem;
+  color: #c9d1d9;
+}
