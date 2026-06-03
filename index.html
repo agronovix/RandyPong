@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Randy Pong</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="game-container">
+    <header>
+      <h1>Randy Pong</h1>
+      <p class="tagline">He's not a ball. He's <em>Randy</em>.</p>
+    </header>
+
+    <canvas id="game" width="900" height="520" aria-label="Randy Pong game canvas"></canvas>
+
+    <div id="hud">
+      <div class="score">
+        <span class="label">You</span>
+        <span id="player-score">0</span>
+      </div>
+      <div id="status">Press SPACE to serve Randy</div>
+      <div class="score">
+        <span class="label">CPU</span>
+        <span id="cpu-score">0</span>
+      </div>
+    </div>
+
+    <div id="controls">
+      <p><kbd>W</kbd> / <kbd>S</kbd> or <kbd>↑</kbd> / <kbd>↓</kbd> — move paddle</p>
+      <p><kbd>SPACE</kbd> — serve Randy</p>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
