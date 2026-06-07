@@ -138,6 +138,29 @@ header h1 {
   background: linear-gradient(180deg, #e8224a, #d4143a);
 }
 
+.difficulty-select {
+  margin-bottom: 0.5rem;
+}
+
+.difficulty-options {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.menu-btn.diff-btn {
+  min-width: 90px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.menu-btn.diff-btn.active {
+  border-color: #58a6ff;
+  background: linear-gradient(180deg, #30363d, #21262d);
+  color: #58a6ff;
+}
+
 .credits {
   margin-top: 0.75rem;
   color: #6e7681;
@@ -211,6 +234,14 @@ kbd {
       <div id="start-menu" class="overlay">
         <h2>American Pong</h2>
         <p class="menu-subtitle">First to 7 wins</p>
+        <div class="difficulty-select">
+          <p class="menu-subtitle">Difficulty</p>
+          <div class="difficulty-options">
+            <button id="btn-easy" class="menu-btn diff-btn" type="button">Easy</button>
+            <button id="btn-normal" class="menu-btn diff-btn active" type="button">Normal</button>
+            <button id="btn-hard" class="menu-btn diff-btn" type="button">Hard</button>
+          </div>
+        </div>
         <button id="btn-start" class="menu-btn primary" type="button">Start</button>
         <p class="credits">by Austin Buhl</p>
       </div>
@@ -237,7 +268,7 @@ kbd {
 
     <div id="controls">
       <p><kbd>W</kbd> / <kbd>S</kbd> or <kbd>↑</kbd> / <kbd>↓</kbd> — move paddle</p>
-      <p><kbd>SPACE</kbd> — serve &nbsp;·&nbsp; <kbd>P</kbd> / <kbd>ESC</kbd> — pause</p>
+      <p><kbd>ENTER</kbd> — serve &nbsp;·&nbsp; <kbd>SPACE</kbd> / <kbd>P</kbd> / <kbd>ESC</kbd> — pause</p>
     </div>
   </div>
 
@@ -253,6 +284,10 @@ const pauseMenuEl = document.getElementById("pause-menu");
 const btnStart = document.getElementById("btn-start");
 const btnResume = document.getElementById("btn-resume");
 const btnRestart = document.getElementById("btn-restart");
+const btnEasy = document.getElementById("btn-easy");
+const btnNormal = document.getElementById("btn-normal");
+const btnHard = document.getElementById("btn-hard");
+const diffButtons = [btnEasy, btnNormal, btnHard];
 
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
@@ -277,8 +312,26 @@ const state = {
 const keys = { up: false, down: false };
 
 const PADDLE_SPEED = 420;
-const CPU_SPEED = 340;
-const INITIAL_SPEED = 380;
+
+const DIFFICULTIES = {
+  easy: { cpuSpeed: 220, cpuDeadzone: 18, initialSpeed: 320, maxSpeed: 600, speedBoost: 1.02 },
+  normal: { cpuSpeed: 340, cpuDeadzone: 8, initialSpeed: 380, maxSpeed: 720, speedBoost: 1.04 },
+  hard: { cpuSpeed: 480, cpuDeadzone: 4, initialSpeed: 420, maxSpeed: 780, speedBoost: 1.06 },
+};
+
+let difficulty = "normal";
+
+function getDiff() {
+  return DIFFICULTIES[difficulty];
+}
+
+function setDifficulty(level) {
+  difficulty = level;
+  diffButtons.forEach((btn) => btn.classList.remove("active"));
+  if (level === "easy") btnEasy.classList.add("active");
+  if (level === "normal") btnNormal.classList.add("active");
+  if (level === "hard") btnHard.classList.add("active");
+}
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -314,7 +367,7 @@ function resetBall(direction) {
   state.serving = true;
   state.serveDirection = direction;
   if (state.phase === "playing") {
-    setStatus("Press SPACE to serve");
+    setStatus("Press ENTER to serve");
   }
 }
 
@@ -337,7 +390,7 @@ function startGame() {
 function resumeGame() {
   hideMenus();
   state.phase = "playing";
-  setStatus(state.serving ? "Press SPACE to serve" : "Ball in play");
+  setStatus(state.serving ? "Press ENTER to serve" : "Ball in play");
 }
 
 function pauseGame() {
@@ -348,9 +401,10 @@ function pauseGame() {
 function serveBall() {
   if (state.phase !== "playing" || !state.serving) return;
 
+  const { initialSpeed } = getDiff();
   const angle = (Math.random() * 0.6 - 0.3) * Math.PI;
-  state.ball.vx = Math.cos(angle) * INITIAL_SPEED * state.serveDirection;
-  state.ball.vy = Math.sin(angle) * INITIAL_SPEED;
+  state.ball.vx = Math.cos(angle) * initialSpeed * state.serveDirection;
+  state.ball.vy = Math.sin(angle) * initialSpeed;
   state.serving = false;
   setStatus("Ball in play");
 }
@@ -435,11 +489,12 @@ function updatePlayer(dt) {
 }
 
 function updateCpu(dt) {
+  const { cpuSpeed, cpuDeadzone } = getDiff();
   const paddleCenter = state.cpuY + PADDLE_HEIGHT / 2;
   const diff = state.ball.y - paddleCenter;
   let move = 0;
-  if (Math.abs(diff) > 8) {
-    move = Math.sign(diff) * CPU_SPEED * dt;
+  if (Math.abs(diff) > cpuDeadzone) {
+    move = Math.sign(diff) * cpuSpeed * dt;
   }
   state.cpuY = clamp(state.cpuY + move, 0, HEIGHT - PADDLE_HEIGHT);
 }
@@ -469,7 +524,8 @@ function collideWithPaddle(paddleY, paddleX, isPlayer) {
   const paddleCenter = paddleY + PADDLE_HEIGHT / 2;
   const relativeIntersect = (ball.y - paddleCenter) / (PADDLE_HEIGHT / 2);
   const bounceAngle = relativeIntersect * (Math.PI / 3);
-  const speed = Math.min(Math.hypot(ball.vx, ball.vy) * 1.04 + 12, 720);
+  const { maxSpeed, speedBoost } = getDiff();
+  const speed = Math.min(Math.hypot(ball.vx, ball.vy) * speedBoost + 12, maxSpeed);
   const direction = isPlayer ? 1 : -1;
 
   ball.vx = Math.cos(bounceAngle) * speed * direction;
@@ -541,7 +597,7 @@ function draw() {
     ctx.fillStyle = "#e6edf3";
     ctx.font = "600 18px Segoe UI, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("SPACE to serve", WIDTH / 2, HEIGHT / 2 + 50);
+    ctx.fillText("ENTER to serve", WIDTH / 2, HEIGHT / 2 + 50);
   }
 }
 
@@ -569,6 +625,9 @@ btnRestart.addEventListener("click", () => {
   state.phase = "playing";
   restartMatch();
 });
+btnEasy.addEventListener("click", () => setDifficulty("easy"));
+btnNormal.addEventListener("click", () => setDifficulty("normal"));
+btnHard.addEventListener("click", () => setDifficulty("hard"));
 
 document.addEventListener("keydown", (e) => {
   if (e.code === "KeyW" || e.code === "ArrowUp") {
@@ -579,7 +638,7 @@ document.addEventListener("keydown", (e) => {
     keys.down = true;
     e.preventDefault();
   }
-  if (e.code === "KeyP" || e.code === "Escape") {
+  if (e.code === "Space" || e.code === "KeyP" || e.code === "Escape") {
     e.preventDefault();
     if (state.phase === "playing") {
       pauseGame();
@@ -587,7 +646,7 @@ document.addEventListener("keydown", (e) => {
       resumeGame();
     }
   }
-  if (e.code === "Space") {
+  if (e.code === "Enter") {
     e.preventDefault();
     if (state.phase === "playing") {
       serveBall();
